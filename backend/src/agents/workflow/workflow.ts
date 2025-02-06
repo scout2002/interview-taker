@@ -7,17 +7,17 @@ import {
 import {
   startInterviewFunc,
   uploadResumeTakerFunc,
-} from "./functions/first_round";
-
-export const StateAnnotation = Annotation.Root({
-  ...MessagesAnnotation.spec,
-  next_state: Annotation<String>,
-  resume_score: Annotation<Number>,
-});
+} from "../functions/first_round";
+import { StateAnnotation } from "./state_schema";
 
 let builder = new StateGraph(StateAnnotation)
   .addNode("start_interview", startInterviewFunc)
   .addNode("resume_taker", uploadResumeTakerFunc)
-  .addEdge("__start__", "start_interview");
+  .addNode("complete", () => ({
+    agent_message: ["Interview process complete!"],
+  }))
+  .addEdge("__start__", "start_interview")
+  .addEdge("start_interview", "resume_taker")
+  .addEdge("resume_taker", "complete");
 
 export default builder;

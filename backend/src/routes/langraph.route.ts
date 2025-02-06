@@ -1,11 +1,14 @@
 import { Router } from "express";
 import { upload } from "../utils/multer";
-import { uploadResumeConstroller } from "./../controllers/langraph.controller";
+import {
+  startConversatioController,
+  uploadResumeConstroller,
+} from "./../controllers/langraph.controller";
 
 const router = Router();
 
-router.post("/start_conversation");
+router.post("/start_conversation", startConversatioController);
 
-router.post("/upload-resume", upload.single("resume"), uploadResumeConstroller);
+router.post("/upload-resume", uploadResumeConstroller);
 
 export default router;
