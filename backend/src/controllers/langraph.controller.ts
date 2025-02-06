@@ -9,28 +9,40 @@ import { MongoClient } from "mongodb";
 import "dotenv/config";
 import { v4 as uuidv4 } from "uuid";
 import builder from "../agents/workflow/workflow";
+import path from "path";
+import fs from "fs";
+import { saveFile } from "../utils/savefile";
 
 const mongo_client = new MongoClient(process.env.MONGO_URI as string);
 
-export const uploadResumeConstroller: RequestHandler = async (
+export const uploadResumeController: RequestHandler = async (
   req,
   res,
   next
 ) => {
   try {
-    // const validationResult = interviewParamsSchema.safeParse(req.params);
-    // if (!validationResult.success) {
-    //   const errors = validationResult.error.errors;
-    //   res.status(400).json({
-    //     message: "Invalid parameters",
-    //     errors: errors.map((error) => ({
-    //       path: error.path.join("."),
-    //       message: error.message,
-    //     })),
-    //   });
-    //   return;
-    // }
-    // const { next_state, thread_id } = validationResult.data;
+    if (!req.file) {
+      res.status(400).json({ message: "No resume file uploaded" });
+      return;
+    }
+
+    const { thread_id } = req.params;
+    const uploadDirectory = path.join(process.cwd(), "src", "uploads");
+
+    if (!fs.existsSync(uploadDirectory)) {
+      fs.mkdirSync(uploadDirectory, { recursive: true });
+    }
+
+    const uploadedFilePath = saveFile(
+      req.file.path,
+      uploadDirectory,
+      thread_id
+    );
+
+    res.status(200).json({
+      message: "Resume uploaded successfully.",
+      filePath: uploadedFilePath,
+    });
   } catch (error) {
     next(error);
   }
@@ -49,11 +61,12 @@ export const startConversatioController: RequestHandler = async (
     });
     const graph = builder.compile({
       checkpointer,
-      interruptAfter: ["start_interview"],
+      interruptBefore: ["human_resume_submit_feedback"],
     });
     const stream = await graph.stream(
       {
         agent_message: ["hello"],
+        thread_id: thread_id,
       },
       {
         configurable: {
@@ -78,6 +91,7 @@ export const resumeConversatioController: RequestHandler = async (
   next
 ) => {
   try {
+    const { thread_id, next_state } = req.params;
   } catch (error) {
     next(error);
   }

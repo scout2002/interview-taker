@@ -11,6 +11,8 @@ export const StateAnnotation = Annotation.Root({
     default: () => [],
     reducer: (prev, next) => [...prev, ...next],
   }),
+  resume_summary: Annotation<string>,
   next_state: Annotation<string>,
   resume_score: Annotation<number>,
+  thread_id: Annotation<string>,
 });
