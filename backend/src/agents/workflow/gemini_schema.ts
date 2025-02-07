@@ -2,21 +2,25 @@ import { SchemaType } from "@google/generative-ai";
 
 export const resume_response_schema = {
   description:
-    "Chatbot response with user query and model answer in markdown format",
+    "Extracted resume details including score, summary, and key skills.",
   type: SchemaType.OBJECT,
   properties: {
-    resume_summary: {
-      type: SchemaType.STRING,
-      description:
-        "The summary of the user's resume or query that the chatbot responds to",
-      nullable: false,
-    },
     resume_score: {
       type: SchemaType.NUMBER,
       description:
-        "The score assigned to the resume, based on the model's evaluation. This value should be a number.",
-      nullable: false,
+        "The extracted resume score (50-100) based on quality and relevance.",
+    },
+    resume_summary: {
+      type: SchemaType.STRING,
+      description:
+        "A concise and detailed summary of the candidate’s skills, experience, and qualifications.",
+    },
+    resume_keywords: {
+      type: SchemaType.ARRAY,
+      items: { type: SchemaType.STRING },
+      description:
+        "Important keywords extracted from the resume, such as skills, certifications, or industry-specific terms.",
     },
   },
-  required: ["resume_summary", "resume_score"],
+  required: ["resume_score", "resume_summary", "resume_keywords"],
 };

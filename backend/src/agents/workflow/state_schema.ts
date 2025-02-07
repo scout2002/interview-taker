@@ -15,4 +15,7 @@ export const StateAnnotation = Annotation.Root({
   next_state: Annotation<string>,
   resume_score: Annotation<number>,
   thread_id: Annotation<string>,
+  resume_upload_path: Annotation<string>,
+  resume_keywords: Annotation<string[]>,
+  resume_rating: Annotation<string[]>,
 });

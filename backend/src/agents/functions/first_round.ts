@@ -12,7 +12,7 @@ export const startInterviewFunc = (state: typeof StateAnnotation.State) => {
     agent_message: [
       "Welcome to ZenCode Interview Process! Please submit your resume here.",
     ],
-    next_state: "resume_taker",
+    next_state: "human_resume_submit_feedback",
   };
 };
 
@@ -24,21 +24,13 @@ export const evaluateResumeSchema = async (
   state: typeof StateAnnotation.State
 ) => {
   try {
-    let thread_id = state.thread_id;
-    const uploadDirectory = path.join(process.cwd(), "src", "uploads");
-    const resumeFilePath = path.join(uploadDirectory, `${thread_id}.pdf`);
-
-    console.log(resumeFilePath);
-
-    if (!fs.existsSync(resumeFilePath)) {
-      throw new Error("Resume file not found.");
-    }
-
     // Initialize Gemini model
     const geminiModel = structuredGeminiModel(resume_response_schema);
 
     // Convert file to a generative part (Ensure it's an array)
-    const fileParts = [fileToGenerativePart(resumeFilePath, "application/pdf")];
+    const fileParts = [
+      fileToGenerativePart(state.resume_upload_path, "application/pdf"),
+    ];
 
     // Generate content
     const result = await geminiModel.generateContent([
@@ -47,6 +39,7 @@ export const evaluateResumeSchema = async (
     ]);
 
     const response = JSON.parse(result.response.text());
+    console.log(response);
 
     return response;
   } catch (error) {

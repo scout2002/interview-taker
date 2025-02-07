@@ -63,22 +63,23 @@ export const startConversatioController: RequestHandler = async (
       checkpointer,
       interruptBefore: ["human_resume_submit_feedback"],
     });
-    const stream = await graph.stream(
+    const thread = {
+      configurable: {
+        thread_id: thread_id,
+      },
+    };
+    const workflow = await graph.stream(
       {
         agent_message: ["hello"],
         thread_id: thread_id,
       },
-      {
-        configurable: {
-          thread_id: thread_id,
-        },
-      }
+      thread
     );
-
-    for await (const value of stream) {
-      console.log("---STEP---");
-      console.log(value);
-      console.log("---END STEP---");
+    for await (const value of workflow) {
+      let agent_message = value.start_interview?.agent_message;
+      let next_state = value?.start_interview?.next_state;
+      res.status(200).json({ thread_id, agent_message, next_state });
+      return;
     }
   } catch (error) {
     next(error);
@@ -92,6 +93,62 @@ export const resumeConversatioController: RequestHandler = async (
 ) => {
   try {
     const { thread_id, next_state } = req.params;
+    const { user_message } = req.body;
+    const checkpointer = new MongoDBSaver({
+      client: mongo_client,
+      dbName: "interview-taker",
+    });
+    const workflow = builder.compile({
+      checkpointer,
+      interruptBefore: ["human_resume_submit_feedback"],
+      interruptAfter: ["resume_evaluator"],
+    });
+    const thread = {
+      configurable: {
+        thread_id: thread_id,
+      },
+    };
+    if (next_state === "human_resume_submit_feedback") {
+      const uploadDirectory = path.join(process.cwd(), "src", "uploads");
+      const resumeFilePath = path.join(uploadDirectory, `${thread_id}.pdf`);
+      console.log(resumeFilePath);
+      if (!fs.existsSync(resumeFilePath)) {
+        throw new Error("Resume file not found.");
+      }
+      console.log(resumeFilePath);
+
+      workflow.updateState(thread, {
+        resume_upload_path: resumeFilePath,
+      });
+    }
+    const stream = await workflow.stream(null, thread);
+    console.log(stream);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCurrentThreadState: RequestHandler = async (req, res, next) => {
+  try {
+    const { thread_id } = req.params;
+    const checkpointer = new MongoDBSaver({
+      client: mongo_client,
+      dbName: "interview-taker",
+    });
+    const workflow = builder.compile({
+      checkpointer,
+      interruptBefore: ["human_resume_submit_feedback"],
+      interruptAfter: ["resume_evaluator"],
+    });
+    const thread = {
+      configurable: {
+        thread_id: thread_id,
+      },
+    };
+
+    const stream = await workflow.getState(thread);
+    res.status(200).send(stream);
+    return;
   } catch (error) {
     next(error);
   }

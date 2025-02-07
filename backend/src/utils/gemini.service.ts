@@ -5,12 +5,12 @@ import {
   GenerateContentRequest,
 } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export const structuredGeminiModel = (schema: Record<string, unknown>) => {
   try {
     return genAI.getGenerativeModel({
-      model: "gemini-1.5-pro",
+      model: "gemini-2.0-flash-001",
       generationConfig: {
         maxOutputTokens: 3000,
         temperature: 0,

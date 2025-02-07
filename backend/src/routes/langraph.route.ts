@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { upload } from "../utils/multer";
 import {
+  getCurrentThreadState,
+  resumeConversatioController,
   startConversatioController,
   uploadResumeController,
 } from "./../controllers/langraph.controller";
@@ -14,5 +16,12 @@ router.post(
   upload.single("file"),
   uploadResumeController
 );
+
+router.post(
+  "/resume_conversation/thread_id=:thread_id&next_state=:next_state",
+  resumeConversatioController
+);
+
+router.post("/get-thread-state/thread_id=:thread_id", getCurrentThreadState);
 
 export default router;
