@@ -119,6 +119,7 @@ export const resumeConversatioController: RequestHandler = async (
 
       workflow.updateState(thread, {
         resume_upload_path: resumeFilePath,
+        next_state: next_state,
       });
     }
     const stream = await workflow.stream(null, thread);
