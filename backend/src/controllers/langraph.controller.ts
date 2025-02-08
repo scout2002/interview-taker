@@ -59,7 +59,7 @@ export const startConversatioController: RequestHandler = async (
       client: mongo_client,
       dbName: "interview-taker",
     });
-    const graph = builder.compile({
+    const workflow = builder.compile({
       checkpointer,
       interruptBefore: ["human_resume_submit_feedback"],
     });
@@ -68,14 +68,14 @@ export const startConversatioController: RequestHandler = async (
         thread_id: thread_id,
       },
     };
-    const workflow = await graph.stream(
+    const graph = await workflow.stream(
       {
         agent_message: ["hello"],
         thread_id: thread_id,
       },
       thread
     );
-    for await (const value of workflow) {
+    for await (const value of graph) {
       let agent_message = value.start_interview?.agent_message;
       let next_state = value?.start_interview?.next_state;
       res.status(200).json({ thread_id, agent_message, next_state });
@@ -101,7 +101,6 @@ export const resumeConversatioController: RequestHandler = async (
     const workflow = builder.compile({
       checkpointer,
       interruptBefore: ["human_resume_submit_feedback"],
-      interruptAfter: ["resume_evaluator"],
     });
     const thread = {
       configurable: {
@@ -115,15 +114,36 @@ export const resumeConversatioController: RequestHandler = async (
       if (!fs.existsSync(resumeFilePath)) {
         throw new Error("Resume file not found.");
       }
-      console.log(resumeFilePath);
-
-      workflow.updateState(thread, {
-        resume_upload_path: resumeFilePath,
-        next_state: next_state,
-      });
+      await workflow.updateState(
+        thread,
+        {
+          resume_upload_path: resumeFilePath,
+          next_state: next_state,
+        },
+        "human_resume_submit_feedback"
+      );
     }
     const stream = await workflow.stream(null, thread);
-    console.log(stream);
+    for await (const value of stream) {
+      console.log(value);
+    }
+    let agentMessage = "";
+    let userMessage = "";
+    let nextState = "";
+    let threadId = "";
+
+    let threadInfo = await workflow.getState(thread);
+    agentMessage = threadInfo.values.agent_message.at(-1) || "none";
+    userMessage = threadInfo.values.user_message.at(-1) || "none";
+    nextState = threadInfo.next[0];
+    threadId = threadInfo.values.thread_id;
+    res.status(200).json({
+      thread_id: threadId,
+      agent_message: agentMessage,
+      next_state: nextState,
+      user_message: userMessage,
+    });
+    return;
   } catch (error) {
     next(error);
   }

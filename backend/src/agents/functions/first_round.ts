@@ -25,6 +25,8 @@ export const evaluateResumeSchema = async (
 ) => {
   try {
     // Initialize Gemini model
+    console.log("Inside Resume EValuator");
+
     const geminiModel = structuredGeminiModel(resume_response_schema);
 
     // Convert file to a generative part (Ensure it's an array)
@@ -46,4 +48,22 @@ export const evaluateResumeSchema = async (
     console.error("Error evaluating resume:", error);
     throw error;
   }
+};
+
+export const init_hr_section = (state: typeof StateAnnotation.State) => {
+  return {
+    agent_message: [
+      "Congragulation!, You have cleared the Previus Resume Evaluator Round.",
+    ],
+  };
+};
+
+export const reject_interview_process = (
+  state: typeof StateAnnotation.State
+) => {
+  return {
+    agent_message: [
+      "Sorry! You are unable to clear the round! Please try again!",
+    ],
+  };
 };
