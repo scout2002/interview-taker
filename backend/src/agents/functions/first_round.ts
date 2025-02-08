@@ -3,9 +3,15 @@ import { tool } from "@langchain/core/tools";
 import { StateAnnotation } from "../workflow/state_schema";
 import path from "path";
 import { structuredGeminiModel } from "../../utils/gemini.service";
-import { resume_response_schema } from "../workflow/gemini_schema";
+import {
+  hr_interview_response_schema,
+  resume_response_schema,
+} from "../workflow/gemini_schema";
 import { fileToGenerativePart } from "../../utils/fileGenerative";
-import { fetchResumeSummary } from "../prompts/firstRound.prompt";
+import {
+  fetchResumeSummary,
+  hr_question_generator,
+} from "../prompts/firstRound.prompt";
 
 export const startInterviewFunc = (state: typeof StateAnnotation.State) => {
   return {
@@ -66,4 +72,27 @@ export const reject_interview_process = (
       "Sorry! You are unable to clear the round! Please try again!",
     ],
   };
+};
+
+export const generateHrQuestions = async (
+  state: typeof StateAnnotation.State
+) => {
+  const prompt = hr_question_generator(
+    state.agent_message.at(-1) ?? "",
+    state.user_message.at(-1) ?? "",
+    state.resume_summary,
+    state.hr_question_answers_completed
+  );
+  const geminiModel = structuredGeminiModel(hr_interview_response_schema);
+  const result = await geminiModel.generateContent(prompt);
+  const response = JSON.parse(result.response.text());
+  return {
+    agent_message: [response?.agent_message],
+    hr_question_answers_completed: response?.hr_question_answers_completed,
+    is_hr_questions_completed: response?.is_hr_questions_completed,
+  };
+};
+
+export const humanHrFilterFeedback = (state: typeof StateAnnotation.State) => {
+  return {};
 };

@@ -61,7 +61,11 @@ export const startConversatioController: RequestHandler = async (
     });
     const workflow = builder.compile({
       checkpointer,
-      interruptBefore: ["human_resume_submit_feedback"],
+      interruptBefore: [
+        "human_resume_submit_feedback",
+        "human_hr_filter_feedback",
+        "welcome_hr_section",
+      ],
     });
     const thread = {
       configurable: {
@@ -93,14 +97,19 @@ export const resumeConversatioController: RequestHandler = async (
 ) => {
   try {
     const { thread_id, next_state } = req.params;
-    const { user_message } = req.body;
+    const { userMessage } = req.body;
     const checkpointer = new MongoDBSaver({
       client: mongo_client,
       dbName: "interview-taker",
     });
     const workflow = builder.compile({
       checkpointer,
-      interruptBefore: ["human_resume_submit_feedback"],
+      interruptBefore: [
+        "human_resume_submit_feedback",
+        "human_hr_filter_feedback",
+        "welcome_hr_section",
+      ],
+      interruptAfter: ["welcome_hr_section"],
     });
     const thread = {
       configurable: {
@@ -122,26 +131,44 @@ export const resumeConversatioController: RequestHandler = async (
         },
         "human_resume_submit_feedback"
       );
+    } else if (next_state === "welcome_hr_section") {
+      await workflow.updateState(
+        thread,
+        {
+          next_state: next_state,
+          user_message: ["Hi"],
+        },
+        "welcome_hr_section"
+      );
+    } else if (next_state === "human_hr_filter_feedback") {
+      await workflow.updateState(
+        thread,
+        {
+          next_state: next_state,
+          user_message: [userMessage],
+        },
+        "human_hr_filter_feedback"
+      );
     }
-    const stream = await workflow.stream(null, thread);
-    for await (const value of stream) {
-      console.log(value);
+    let newAgentMessage = "";
+    let newUserMessage = "";
+    const graph = await workflow.stream(null, thread);
+    for await (const value of graph) {
+      newAgentMessage = value.start_interview?.agent_message;
+      newUserMessage = value?.start_interview?.user_message;
     }
-    let agentMessage = "";
-    let userMessage = "";
     let nextState = "";
     let threadId = "";
-
     let threadInfo = await workflow.getState(thread);
-    agentMessage = threadInfo.values.agent_message.at(-1) || "none";
-    userMessage = threadInfo.values.user_message.at(-1) || "none";
+    newAgentMessage = threadInfo.values.agent_message.at(-1) || "none";
+    newUserMessage = threadInfo.values.user_message.at(-1) || "none";
     nextState = threadInfo.next[0];
     threadId = threadInfo.values.thread_id;
     res.status(200).json({
       thread_id: threadId,
-      agent_message: agentMessage,
+      agent_message: newAgentMessage,
       next_state: nextState,
-      user_message: userMessage,
+      user_message: newUserMessage,
     });
     return;
   } catch (error) {
@@ -158,8 +185,11 @@ export const getCurrentThreadState: RequestHandler = async (req, res, next) => {
     });
     const workflow = builder.compile({
       checkpointer,
-      interruptBefore: ["human_resume_submit_feedback"],
-      interruptAfter: ["resume_evaluator"],
+      interruptBefore: [
+        "human_resume_submit_feedback",
+        "human_hr_filter_feedback",
+      ],
+      interruptAfter: ["welcome_hr_section"],
     });
     const thread = {
       configurable: {
