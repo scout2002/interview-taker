@@ -7,6 +7,7 @@ import {
   StateGraph,
 } from "@langchain/langgraph";
 import {
+  evaluateHrFilterRound,
   evaluateResumeSchema,
   generateHrQuestions,
   humanHrFilterFeedback,
@@ -15,7 +16,7 @@ import {
   reject_interview_process,
   resumeTaker,
   startInterviewFunc,
-} from "../functions/first_round";
+} from "../functions/agent_func";
 import { StateAnnotation } from "./state_schema";
 
 let builder = new StateGraph(StateAnnotation)
@@ -26,7 +27,7 @@ let builder = new StateGraph(StateAnnotation)
   .addNode("welcome_hr_section", init_hr_section)
   .addNode("generate_hr_question", generateHrQuestions)
   .addNode("human_hr_filter_feedback", humanHrFilterFeedback)
-  .addNode("hr_final_evaluation", init_hr_section)
+  .addNode("hr_final_evaluation", evaluateHrFilterRound)
   .addNode("reject_interview_process", reject_interview_process)
   .addNode("complete", () => ({
     agent_message: ["Interview process complete!"],
@@ -49,7 +50,9 @@ let builder = new StateGraph(StateAnnotation)
       : "human_hr_filter_feedback"
   )
   .addEdge("human_hr_filter_feedback", "generate_hr_question")
-  .addEdge("hr_final_evaluation", "complete")
+  .addConditionalEdges("hr_final_evaluation", (state) =>
+    state.is_hr_evaluation_pass ? "complete" : "reject_interview_process"
+  )
   .addEdge("complete", END);
 
 export default builder;

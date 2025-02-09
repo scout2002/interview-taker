@@ -92,3 +92,37 @@ ${JSON.stringify(hr_question_answers_completed, null, 2)}
 Now, based on the **resume summary**, **previous answers**, **role (${interview_type})**, and **interview history**, generate the **next logical HR question** while ensuring that answers are **attached to relevant questions** where appropriate.
   `;
 };
+
+export const hrEvaluationPrompt = (
+  hr_question_answers_completed: HRQuestionAnswer[]
+) => {
+  return `
+You are an AI HR evaluator. Evaluate the candidate's responses based on professionalism, clarity, confidence, honesty, and relevance.
+
+Here is the interview data:
+
+\`\`\`json
+{
+  "hr_interview": ${JSON.stringify(hr_question_answers_completed, null, 2)}
+}
+\`\`\`
+
+### **Evaluation Criteria**
+1. **Professionalism**: Does the candidate maintain a respectful and appropriate tone?
+2. **Clarity**: Are the responses clear and well-structured?
+3. **Confidence**: Does the candidate express confidence in their answers?
+4. **Honesty**: Are the responses truthful and aligned with their experience?
+5. **Relevance**: Do the answers directly address the HR questions?
+
+Based on the above criteria, determine if the candidate passes the HR round.
+
+### **Expected Output JSON Format**
+\`\`\`json
+{
+  "is_hr_evaluation_pass": true/false
+}
+\`\`\`
+
+Return **true** if the candidate meets the evaluation criteria satisfactorily; otherwise, return **false**.
+  `;
+};

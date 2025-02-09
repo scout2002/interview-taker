@@ -4,6 +4,7 @@ import { StateAnnotation } from "../workflow/state_schema";
 import path from "path";
 import { structuredGeminiModel } from "../../utils/gemini.service";
 import {
+  hr_interview_evaluation_schema,
   hr_interview_response_schema,
   resume_response_schema,
 } from "../workflow/gemini_schema";
@@ -11,6 +12,7 @@ import { fileToGenerativePart } from "../../utils/fileGenerative";
 import {
   fetchResumeSummary,
   hr_question_generator,
+  hrEvaluationPrompt,
 } from "../prompts/firstRound.prompt";
 
 export const startInterviewFunc = (state: typeof StateAnnotation.State) => {
@@ -102,4 +104,14 @@ export const generateHrQuestions = async (
 
 export const humanHrFilterFeedback = (state: typeof StateAnnotation.State) => {
   return {};
+};
+
+export const evaluateHrFilterRound = async (
+  state: typeof StateAnnotation.State
+) => {
+  const prompt = hrEvaluationPrompt(state.hr_question_answers_completed);
+  const geminiModel = structuredGeminiModel(hr_interview_evaluation_schema);
+  const result = await geminiModel.generateContent(prompt);
+  const response = JSON.parse(result.response.text());
+  return response;
 };

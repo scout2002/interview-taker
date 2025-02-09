@@ -49,4 +49,5 @@ export const StateAnnotation = Annotation.Root({
     reducer: (prev, next) => [...prev, ...next],
   }),
   interview_type: Annotation<string>,
+  is_hr_evaluation_pass: Annotation<boolean>,
 });

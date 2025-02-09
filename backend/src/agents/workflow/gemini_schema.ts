@@ -66,3 +66,16 @@ export const hr_interview_response_schema = {
     "is_hr_questions_completed",
   ],
 };
+
+export const hr_interview_evaluation_schema = {
+  description:
+    "HR interview response structure, evaluates HR questions and answers",
+  type: SchemaType.OBJECT,
+  properties: {
+    is_hr_evaluation_pass: {
+      type: SchemaType.BOOLEAN,
+      description: "Indicates whether the HR interview round is passed.",
+    },
+  },
+  required: ["is_hr_evaluation_pass"],
+};
