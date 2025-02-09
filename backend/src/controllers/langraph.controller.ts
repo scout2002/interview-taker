@@ -12,6 +12,7 @@ import builder from "../agents/workflow/workflow";
 import path from "path";
 import fs from "fs";
 import { saveFile } from "../utils/savefile";
+import { InterviewType } from "../agents/workflow/state_schema";
 
 const mongo_client = new MongoClient(process.env.MONGO_URI as string);
 
@@ -62,6 +63,7 @@ export const startConversatioController: RequestHandler = async (
     const workflow = builder.compile({
       checkpointer,
       interruptBefore: [
+        "human_select_interview_type",
         "human_resume_submit_feedback",
         "human_hr_filter_feedback",
         "welcome_hr_section",
@@ -79,12 +81,26 @@ export const startConversatioController: RequestHandler = async (
       },
       thread
     );
+    let newAgentMessage = "";
+    let newUserMessage = "";
     for await (const value of graph) {
-      let agent_message = value.start_interview?.agent_message;
-      let next_state = value?.start_interview?.next_state;
-      res.status(200).json({ thread_id, agent_message, next_state });
-      return;
+      newAgentMessage = value.start_interview?.agent_message;
+      newUserMessage = value?.start_interview?.next_state;
     }
+    let nextState = "";
+    let threadId = "";
+    let threadInfo = await workflow.getState(thread);
+    newAgentMessage = threadInfo.values.agent_message.at(-1) || "none";
+    newUserMessage = threadInfo.values.user_message.at(-1) || "none";
+    nextState = threadInfo.next[0];
+    threadId = threadInfo.values.thread_id;
+    res.status(200).json({
+      thread_id: threadId,
+      agent_message: newAgentMessage,
+      next_state: nextState,
+      user_message: newUserMessage,
+    });
+    return;
   } catch (error) {
     next(error);
   }
@@ -96,7 +112,7 @@ export const resumeConversatioController: RequestHandler = async (
   next
 ) => {
   try {
-    const { thread_id, next_state } = req.params;
+    const { thread_id, next_state, interview_type } = req.params;
     const { userMessage } = req.body;
     const checkpointer = new MongoDBSaver({
       client: mongo_client,
@@ -106,17 +122,32 @@ export const resumeConversatioController: RequestHandler = async (
       checkpointer,
       interruptBefore: [
         "human_resume_submit_feedback",
+        "human_select_interview_type",
         "human_hr_filter_feedback",
         "welcome_hr_section",
       ],
-      interruptAfter: ["welcome_hr_section"],
     });
     const thread = {
       configurable: {
         thread_id: thread_id,
       },
     };
-    if (next_state === "human_resume_submit_feedback") {
+    if (next_state === "human_select_interview_type") {
+      console.log("Entered in human Select Process");
+
+      if (!(interview_type in InterviewType)) {
+        console.log("interview_type");
+
+        throw new Error("Invalid interview type");
+      }
+      await workflow.updateState(
+        thread,
+        {
+          interview_type: interview_type,
+        },
+        "human_select_interview_type"
+      );
+    } else if (next_state === "human_resume_submit_feedback") {
       const uploadDirectory = path.join(process.cwd(), "src", "uploads");
       const resumeFilePath = path.join(uploadDirectory, `${thread_id}.pdf`);
       console.log(resumeFilePath);
@@ -186,10 +217,11 @@ export const getCurrentThreadState: RequestHandler = async (req, res, next) => {
     const workflow = builder.compile({
       checkpointer,
       interruptBefore: [
+        "human_select_interview_type",
         "human_resume_submit_feedback",
         "human_hr_filter_feedback",
+        "welcome_hr_section",
       ],
-      interruptAfter: ["welcome_hr_section"],
     });
     const thread = {
       configurable: {

@@ -18,7 +18,7 @@ router.post(
 );
 
 router.post(
-  "/resume_conversation/thread_id=:thread_id&next_state=:next_state",
+  "/resume_conversation/thread_id=:thread_id&next_state=:next_state&interview_type=:interview_type",
   resumeConversatioController
 );
 

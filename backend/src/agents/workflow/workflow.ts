@@ -10,6 +10,7 @@ import {
   evaluateResumeSchema,
   generateHrQuestions,
   humanHrFilterFeedback,
+  humanIntervieeSelectFeedback,
   init_hr_section,
   reject_interview_process,
   resumeTaker,
@@ -19,6 +20,7 @@ import { StateAnnotation } from "./state_schema";
 
 let builder = new StateGraph(StateAnnotation)
   .addNode("start_interview", startInterviewFunc)
+  .addNode("human_select_interview_type", humanIntervieeSelectFeedback)
   .addNode("human_resume_submit_feedback", resumeTaker)
   .addNode("resume_evaluator", evaluateResumeSchema)
   .addNode("welcome_hr_section", init_hr_section)
@@ -31,7 +33,12 @@ let builder = new StateGraph(StateAnnotation)
   }))
   .addEdge(START, "start_interview")
   .addEdge("start_interview", "human_resume_submit_feedback")
-  .addEdge("human_resume_submit_feedback", "resume_evaluator")
+  .addEdge("human_resume_submit_feedback", "human_select_interview_type")
+  .addConditionalEdges("human_select_interview_type", (state) =>
+    state.interview_type?.length > 0
+      ? "resume_evaluator"
+      : "human_select_interview_type"
+  )
   .addConditionalEdges("resume_evaluator", (state) =>
     state.resume_score > 70 ? "welcome_hr_section" : "reject_interview_process"
   )

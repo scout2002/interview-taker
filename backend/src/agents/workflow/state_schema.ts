@@ -1,6 +1,29 @@
 import { BaseMessage } from "@langchain/core/messages";
 import { Annotation, MessagesAnnotation } from "@langchain/langgraph";
 
+export enum InterviewType {
+  JAVA_BACKEND = "Java Backend Developer",
+  JAVASCRIPT_FULLSTACK = "JavaScript Full Stack Developer",
+  REACT_FRONTEND = "React Frontend Developer",
+  MERN_STACK = "MERN Stack Developer",
+  PYTHON_BACKEND = "Python Backend Developer",
+  DATA_ENGINEER = "Data Engineer",
+  DEVOPS_ENGINEER = "DevOps Engineer",
+  MOBILE_DEVELOPER = "Mobile App Developer",
+  MACHINE_LEARNING = "Machine Learning Engineer",
+  CYBER_SECURITY = "Cyber Security Specialist",
+  DATA_SCIENTIST = "Data Scientist",
+  AI_ENGINEER = "AI Engineer",
+  CLOUD_ENGINEER = "Cloud Engineer",
+  SOFTWARE_ARCHITECT = "Software Architect",
+  FRONTEND_ENGINEER = "Frontend Engineer",
+  BACKEND_ENGINEER = "Backend Engineer",
+  FULLSTACK_ENGINEER = "Full Stack Engineer",
+  BLOCKCHAIN_DEVELOPER = "Blockchain Developer",
+  GAME_DEVELOPER = "Game Developer",
+  EMBEDDED_SYSTEMS_ENGINEER = "Embedded Systems Engineer",
+}
+
 export const StateAnnotation = Annotation.Root({
   ...MessagesAnnotation.spec,
   agent_message: Annotation<string[]>({
@@ -25,4 +48,5 @@ export const StateAnnotation = Annotation.Root({
     default: () => [],
     reducer: (prev, next) => [...prev, ...next],
   }),
+  interview_type: Annotation<string>,
 });

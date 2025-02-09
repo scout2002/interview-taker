@@ -16,10 +16,15 @@ import {
 export const startInterviewFunc = (state: typeof StateAnnotation.State) => {
   return {
     agent_message: [
-      "Welcome to ZenCode Interview Process! Please submit your resume here.",
+      "Hello! I’ll be conducting your interview today. Before we begin, please select the interview type you’re applying for. Also, kindly upload your resume so I can review your qualifications and tailor the questions accordingly.",
     ],
-    next_state: "human_resume_submit_feedback",
   };
+};
+
+export const humanIntervieeSelectFeedback = (
+  state: typeof StateAnnotation.State
+) => {
+  return {};
 };
 
 export const resumeTaker = (state: typeof StateAnnotation.State) => {
@@ -81,11 +86,14 @@ export const generateHrQuestions = async (
     state.agent_message.at(-1) ?? "",
     state.user_message.at(-1) ?? "",
     state.resume_summary,
-    state.hr_question_answers_completed
+    state.hr_question_answers_completed,
+    state.interview_type
   );
   const geminiModel = structuredGeminiModel(hr_interview_response_schema);
   const result = await geminiModel.generateContent(prompt);
   const response = JSON.parse(result.response.text());
+  console.log(response);
+
   return {
     agent_message: [response?.agent_message],
     hr_question_answers_completed: response?.hr_question_answers_completed,
