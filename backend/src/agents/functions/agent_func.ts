@@ -92,7 +92,6 @@ export const generateHrQuestions = async (
   const geminiModel = structuredGeminiModel(hr_interview_response_schema);
   const result = await geminiModel.generateContent(prompt);
   const response = JSON.parse(result.response.text());
-  console.log(response);
 
   return {
     agent_message: [response?.agent_message],
