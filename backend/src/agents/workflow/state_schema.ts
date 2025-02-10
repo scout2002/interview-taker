@@ -50,4 +50,13 @@ export const StateAnnotation = Annotation.Root({
   }),
   interview_type: Annotation<string>,
   is_hr_evaluation_pass: Annotation<boolean>,
+  tech_round_one_data: Annotation<
+    [
+      {
+        tech_question: string;
+        user_answer: string;
+      }
+    ]
+  >,
+  tech_round_one_complete: Annotation<Boolean>,
 });

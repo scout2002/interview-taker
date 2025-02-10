@@ -63,10 +63,12 @@ export const startConversatioController: RequestHandler = async (
     const workflow = builder.compile({
       checkpointer,
       interruptBefore: [
-        "human_select_interview_type",
         "human_resume_submit_feedback",
+        "human_select_interview_type",
         "human_hr_filter_feedback",
         "welcome_hr_section",
+        "welcome_tech_round_one",
+        "human_tech_round_one_feedback",
       ],
     });
     const thread = {
@@ -125,6 +127,8 @@ export const resumeConversatioController: RequestHandler = async (
         "human_select_interview_type",
         "human_hr_filter_feedback",
         "welcome_hr_section",
+        "welcome_tech_round_one",
+        "human_tech_round_one_feedback",
       ],
     });
     const thread = {
@@ -180,6 +184,24 @@ export const resumeConversatioController: RequestHandler = async (
         },
         "human_hr_filter_feedback"
       );
+    } else if (next_state === "welcome_tech_round_one") {
+      await workflow.updateState(
+        thread,
+        {
+          next_state: next_state,
+          user_message: ["Hi"],
+        },
+        "welcome_tech_round_one"
+      );
+    } else if (next_state === "human_tech_round_one_feedback") {
+      await workflow.updateState(
+        thread,
+        {
+          next_state: next_state,
+          user_message: [userMessage],
+        },
+        "human_tech_round_one_feedback"
+      );
     }
     let newAgentMessage = "";
     let newUserMessage = "";
@@ -217,10 +239,12 @@ export const getCurrentThreadState: RequestHandler = async (req, res, next) => {
     const workflow = builder.compile({
       checkpointer,
       interruptBefore: [
-        "human_select_interview_type",
         "human_resume_submit_feedback",
+        "human_select_interview_type",
         "human_hr_filter_feedback",
         "welcome_hr_section",
+        "welcome_tech_round_one",
+        "human_tech_round_one_feedback",
       ],
     });
     const thread = {

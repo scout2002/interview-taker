@@ -9,10 +9,13 @@ import {
 import {
   evaluateHrFilterRound,
   evaluateResumeSchema,
+  generate_tech_round_one_questions,
   generateHrQuestions,
+  humanTechRoundFeeback,
   humanHrFilterFeedback,
   humanIntervieeSelectFeedback,
   init_hr_section,
+  init_tech_round_one,
   reject_interview_process,
   resumeTaker,
   startInterviewFunc,
@@ -28,6 +31,12 @@ let builder = new StateGraph(StateAnnotation)
   .addNode("generate_hr_question", generateHrQuestions)
   .addNode("human_hr_filter_feedback", humanHrFilterFeedback)
   .addNode("hr_final_evaluation", evaluateHrFilterRound)
+  .addNode("welcome_tech_round_one", init_tech_round_one)
+  .addNode(
+    "generate_tech_round_one_questions",
+    generate_tech_round_one_questions
+  )
+  .addNode("human_tech_round_one_feedback", humanTechRoundFeeback)
   .addNode("reject_interview_process", reject_interview_process)
   .addNode("complete", () => ({
     agent_message: ["Interview process complete!"],
@@ -51,8 +60,16 @@ let builder = new StateGraph(StateAnnotation)
   )
   .addEdge("human_hr_filter_feedback", "generate_hr_question")
   .addConditionalEdges("hr_final_evaluation", (state) =>
-    state.is_hr_evaluation_pass ? "complete" : "reject_interview_process"
+    state.is_hr_evaluation_pass
+      ? "welcome_tech_round_one"
+      : "reject_interview_process"
   )
+  .addEdge("welcome_tech_round_one", "generate_tech_round_one_questions")
+  .addConditionalEdges("generate_tech_round_one_questions", (state) =>
+    state.tech_round_one_complete ? "complete" : "human_tech_round_one_feedback"
+  )
+  .addEdge("human_tech_round_one_feedback", "generate_tech_round_one_questions")
+  .addEdge("welcome_tech_round_one", "complete")
   .addEdge("complete", END);
 
 export default builder;

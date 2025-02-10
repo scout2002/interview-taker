@@ -7,7 +7,10 @@ import {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-export const structuredGeminiModel = (schema: Record<string, unknown>) => {
+export const structuredGeminiModel = (
+  schema: Record<string, unknown>,
+  system_instruction?: string
+) => {
   try {
     return genAI.getGenerativeModel({
       model: "gemini-2.0-flash-001",
@@ -18,6 +21,7 @@ export const structuredGeminiModel = (schema: Record<string, unknown>) => {
         responseMimeType: "application/json",
         responseSchema: schema,
       },
+      systemInstruction: system_instruction ?? "",
       safetySettings: [
         {
           category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
