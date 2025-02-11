@@ -59,4 +59,13 @@ export const StateAnnotation = Annotation.Root({
     ]
   >,
   tech_round_one_complete: Annotation<Boolean>,
+  tech_round_two_data: Annotation<
+    [
+      {
+        tech_question: string;
+        user_answer: string;
+      }
+    ]
+  >,
+  tech_round_two_complete: Annotation<Boolean>,
 });

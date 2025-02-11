@@ -118,3 +118,42 @@ export const tech_round_one_interview_response_schema = {
   },
   required: ["tech_round_one_data", "agent_message", "tech_round_one_complete"],
 };
+
+export const tech_round_two_interview_response_schema = {
+  description:
+    "Technical Round two interview response structure, including dynamically generated questions, candidate answers, and completion status.",
+  type: SchemaType.OBJECT,
+  properties: {
+    tech_round_two_data: {
+      type: SchemaType.ARRAY,
+      description:
+        "List of technical interview questions asked along with the candidate's responses.",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          tech_question: {
+            type: SchemaType.STRING,
+            description:
+              "A dynamically generated technical interview question.",
+          },
+          user_answer: {
+            type: SchemaType.STRING,
+            description: "The candidate's response to the respective question.",
+          },
+        },
+        required: ["tech_question", "user_answer"],
+      },
+    },
+    agent_message: {
+      type: SchemaType.STRING,
+      description:
+        "The next technical question to be presented to the candidate.",
+    },
+    tech_round_two_complete: {
+      type: SchemaType.BOOLEAN,
+      description:
+        "Indicates whether the Technical Round One interview is complete.",
+    },
+  },
+  required: ["tech_round_two_data", "agent_message", "tech_round_two_complete"],
+};

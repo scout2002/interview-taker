@@ -69,6 +69,8 @@ export const startConversatioController: RequestHandler = async (
         "welcome_hr_section",
         "welcome_tech_round_one",
         "human_tech_round_one_feedback",
+        "welcome_tech_round_two",
+        "human_tech_round_two_feedback",
       ],
     });
     const thread = {
@@ -129,6 +131,8 @@ export const resumeConversatioController: RequestHandler = async (
         "welcome_hr_section",
         "welcome_tech_round_one",
         "human_tech_round_one_feedback",
+        "welcome_tech_round_two",
+        "human_tech_round_two_feedback",
       ],
     });
     const thread = {
@@ -202,6 +206,24 @@ export const resumeConversatioController: RequestHandler = async (
         },
         "human_tech_round_one_feedback"
       );
+    } else if (next_state === "welcome_tech_round_two") {
+      await workflow.updateState(
+        thread,
+        {
+          next_state: next_state,
+          user_message: ["Hi"],
+        },
+        "welcome_tech_round_two"
+      );
+    } else if (next_state === "human_tech_round_two_feedback") {
+      await workflow.updateState(
+        thread,
+        {
+          next_state: next_state,
+          user_message: [userMessage],
+        },
+        "human_tech_round_two_feedback"
+      );
     }
     let newAgentMessage = "";
     let newUserMessage = "";
@@ -245,6 +267,8 @@ export const getCurrentThreadState: RequestHandler = async (req, res, next) => {
         "welcome_hr_section",
         "welcome_tech_round_one",
         "human_tech_round_one_feedback",
+        "welcome_tech_round_two",
+        "human_tech_round_two_feedback",
       ],
     });
     const thread = {

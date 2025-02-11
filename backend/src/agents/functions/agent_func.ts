@@ -8,13 +8,16 @@ import {
   hr_interview_response_schema,
   resume_response_schema,
   tech_round_one_interview_response_schema,
+  tech_round_two_interview_response_schema,
 } from "../workflow/gemini_schema";
 import { fileToGenerativePart } from "../../utils/fileGenerative";
 import {
   fetchResumeSummary,
-  generateTechRoundOnePrompt,
+  generateTechRoundOneSystemPrompt,
+  generateTechRoundOneUserPrompt,
+  generateTechRoundTwoSystemPrompt,
+  generateTechRoundTwoUserPrompt,
   hr_genertor_system_prompt,
-  hr_question_generator,
   hr_user_prompt,
   hrEvaluationPrompt,
 } from "../prompts/firstRound.prompt";
@@ -141,26 +144,64 @@ export const humanTechRoundFeeback = (state: typeof StateAnnotation.State) => {
   return {};
 };
 
-export const generate_tech_round_one_questions = async (
+export const generateTechRoundOneQuestions = async (
   state: typeof StateAnnotation.State
 ) => {
-  const prompt = generateTechRoundOnePrompt(
-    state.agent_message.at(-1) ?? "",
-    state.user_message.at(-1) ?? "",
+  const systemPrompt = generateTechRoundOneSystemPrompt(
     state.resume_summary,
     state.tech_round_one_data,
     state.interview_type,
     state.resume_keywords
   );
-  const geminiModel = structuredGeminiModel(
-    tech_round_one_interview_response_schema
+  const userPrompt = generateTechRoundOneUserPrompt(
+    state.agent_message.at(-1) ?? "",
+    state.user_message.at(-1) ?? ""
   );
-  const result = await geminiModel.generateContent(prompt);
+  const geminiModel = structuredGeminiModel(
+    tech_round_one_interview_response_schema,
+    systemPrompt
+  );
+  const result = await geminiModel.generateContent(userPrompt);
   const response = JSON.parse(result.response.text());
 
   return {
     agent_message: [response?.agent_message],
     tech_round_one_data: response?.tech_round_one_data,
     tech_round_one_complete: response?.tech_round_one_complete,
+  };
+};
+
+export const init_tech_round_two = (state: typeof StateAnnotation.State) => {
+  return {
+    agent_message: [
+      "Congratulations! You have successfully cleared the first technical round. Your skills and problem-solving abilities have impressed us, and we are excited to move you forward to the next stage. Get ready for a more in-depth technical evaluation. Prepare well, stay confident, and give it your best shot. Good luck!",
+    ],
+  };
+};
+
+export const generateTechRoundTwoQuestions = async (
+  state: typeof StateAnnotation.State
+) => {
+  const systemPrompt = generateTechRoundTwoSystemPrompt(
+    state.resume_summary,
+    state.tech_round_two_data,
+    state.interview_type,
+    state.resume_keywords
+  );
+  const userPrompt = generateTechRoundTwoUserPrompt(
+    state.agent_message.at(-1) ?? "",
+    state.user_message.at(-1) ?? ""
+  );
+  const geminiModel = structuredGeminiModel(
+    tech_round_two_interview_response_schema,
+    systemPrompt
+  );
+  const result = await geminiModel.generateContent(userPrompt);
+  const response = JSON.parse(result.response.text());
+
+  return {
+    agent_message: [response?.agent_message],
+    tech_round_two_data: response?.tech_round_two_data,
+    tech_round_two_complete: response?.tech_round_two_complete,
   };
 };

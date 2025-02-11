@@ -9,7 +9,6 @@ import {
 import {
   evaluateHrFilterRound,
   evaluateResumeSchema,
-  generate_tech_round_one_questions,
   generateHrQuestions,
   humanTechRoundFeeback,
   humanHrFilterFeedback,
@@ -19,6 +18,9 @@ import {
   reject_interview_process,
   resumeTaker,
   startInterviewFunc,
+  init_tech_round_two,
+  generateTechRoundOneQuestions,
+  generateTechRoundTwoQuestions,
 } from "../functions/agent_func";
 import { StateAnnotation } from "./state_schema";
 
@@ -32,11 +34,11 @@ let builder = new StateGraph(StateAnnotation)
   .addNode("human_hr_filter_feedback", humanHrFilterFeedback)
   .addNode("hr_final_evaluation", evaluateHrFilterRound)
   .addNode("welcome_tech_round_one", init_tech_round_one)
-  .addNode(
-    "generate_tech_round_one_questions",
-    generate_tech_round_one_questions
-  )
+  .addNode("generate_tech_round_one_questions", generateTechRoundOneQuestions)
   .addNode("human_tech_round_one_feedback", humanTechRoundFeeback)
+  .addNode("welcome_tech_round_two", init_tech_round_two)
+  .addNode("generate_tech_round_two_questions", generateTechRoundTwoQuestions)
+  .addNode("human_tech_round_two_feedback", humanTechRoundFeeback)
   .addNode("reject_interview_process", reject_interview_process)
   .addNode("complete", () => ({
     agent_message: ["Interview process complete!"],
@@ -66,10 +68,16 @@ let builder = new StateGraph(StateAnnotation)
   )
   .addEdge("welcome_tech_round_one", "generate_tech_round_one_questions")
   .addConditionalEdges("generate_tech_round_one_questions", (state) =>
-    state.tech_round_one_complete ? "complete" : "human_tech_round_one_feedback"
+    state.tech_round_one_complete
+      ? "welcome_tech_round_two"
+      : "human_tech_round_one_feedback"
   )
   .addEdge("human_tech_round_one_feedback", "generate_tech_round_one_questions")
-  .addEdge("welcome_tech_round_one", "complete")
+  .addEdge("welcome_tech_round_two", "generate_tech_round_two_questions")
+  .addConditionalEdges("generate_tech_round_two_questions", (state) =>
+    state.tech_round_two_complete ? "complete" : "human_tech_round_two_feedback"
+  )
+  .addEdge("human_tech_round_two_feedback", "generate_tech_round_two_questions")
   .addEdge("complete", END);
 
 export default builder;
