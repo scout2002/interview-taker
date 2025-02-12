@@ -12,6 +12,7 @@ import {
 } from "../workflow/gemini_schema";
 import { fileToGenerativePart } from "../../utils/fileGenerative";
 import {
+  evaluationTechRoundAnswerPrompt,
   fetchResumeSummary,
   generateTechRoundOneSystemPrompt,
   generateTechRoundOneUserPrompt,
@@ -20,6 +21,8 @@ import {
   hr_genertor_system_prompt,
   hr_user_prompt,
   hrEvaluationPrompt,
+  HRQuestionAnswer,
+  InterviewRQuestionAnswer,
 } from "../prompts/firstRound.prompt";
 
 export const startInterviewFunc = (state: typeof StateAnnotation.State) => {
@@ -204,4 +207,18 @@ export const generateTechRoundTwoQuestions = async (
     tech_round_two_data: response?.tech_round_two_data,
     tech_round_two_complete: response?.tech_round_two_complete,
   };
+};
+
+export const generateTechRoundFunction = async (
+  state: typeof StateAnnotation.State
+) => {
+  console.log("inside Tech Evaluator ROund");
+
+  const prompt = evaluationTechRoundAnswerPrompt(
+    state.tech_round_one_data,
+    state.tech_round_two_data,
+    state.interview_type
+  );
+
+  return { agent_message: ["Doing good"] };
 };

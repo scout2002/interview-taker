@@ -134,6 +134,7 @@ export const resumeConversatioController: RequestHandler = async (
         "welcome_tech_round_two",
         "human_tech_round_two_feedback",
       ],
+      interruptAfter: ["evaluate_tech_round"],
     });
     const thread = {
       configurable: {
@@ -223,6 +224,14 @@ export const resumeConversatioController: RequestHandler = async (
           user_message: [userMessage],
         },
         "human_tech_round_two_feedback"
+      );
+    } else if (next_state === "evaluate_tech_round") {
+      await workflow.updateState(
+        thread,
+        {
+          next_state: next_state,
+        },
+        "evaluate_tech_round"
       );
     }
     let newAgentMessage = "";
