@@ -68,4 +68,14 @@ export const StateAnnotation = Annotation.Root({
     ]
   >,
   tech_round_two_complete: Annotation<Boolean>,
+  salary_approved: Annotation<number>,
+  tech_round_evaluation: Annotation<Boolean>,
+  is_final_hr_questions_completed: Annotation<boolean>,
+  final_hr_question_answers_completed: Annotation<
+    { hr_question: string; user_answer: string }[]
+  >({
+    default: () => [],
+    reducer: (prev, next) => [...prev, ...next],
+  }),
+  final_salary_bargained: Annotation<number>,
 });

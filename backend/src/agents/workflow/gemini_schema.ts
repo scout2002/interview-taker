@@ -157,3 +157,69 @@ export const tech_round_two_interview_response_schema = {
   },
   required: ["tech_round_two_data", "agent_message", "tech_round_two_complete"],
 };
+
+export const tech_round_evaluation_schema = {
+  description:
+    "Technical Round Two Interview Evaluation response structure, judging based on dynamically generated questions, candidate answers, and completion status.",
+  type: SchemaType.OBJECT,
+  properties: {
+    salary_approved: {
+      type: SchemaType.STRING,
+      description:
+        "The salary can be either 500000 or 1000000 (5 lakhs or 10 lakhs).",
+    },
+    tech_round_evaluation: {
+      type: SchemaType.BOOLEAN,
+      description: "Indicates whether the Technical Round is cleared or not.",
+    },
+  },
+  required: ["salary_approved", "tech_round_evaluation"],
+};
+
+export const final_hr_interview_response_schema = {
+  description:
+    "HR interview response structure, including dynamically generated questions, user answers, and completion status.",
+  type: SchemaType.OBJECT,
+  properties: {
+    final_hr_question_answers_completed: {
+      type: SchemaType.ARRAY,
+      description:
+        "List of HR questions asked along with corresponding user responses.",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          hr_question: {
+            type: SchemaType.STRING,
+            description: "The HR question generated for the candidate.",
+          },
+          user_answer: {
+            type: SchemaType.STRING,
+            description:
+              "The candidate's response to the respective HR question.",
+          },
+        },
+        required: ["hr_question", "user_answer"],
+      },
+    },
+    agent_message: {
+      type: SchemaType.STRING,
+      description: "The next HR question to be asked to the candidate.",
+    },
+    is_final_hr_questions_completed: {
+      type: SchemaType.BOOLEAN,
+      description:
+        "Indicates whether the HR interview question round is complete.",
+    },
+    final_salary_bargained: {
+      type: SchemaType.NUMBER,
+      nullable: true,
+      description: "Final salary after negotiation or null if not finalized.",
+    },
+  },
+  required: [
+    "final_hr_question_answers_completed",
+    "agent_message",
+    "is_final_hr_questions_completed",
+    "final_salary_bargained",
+  ],
+};

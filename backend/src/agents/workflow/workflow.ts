@@ -21,7 +21,10 @@ import {
   init_tech_round_two,
   generateTechRoundOneQuestions,
   generateTechRoundTwoQuestions,
-  generateTechRoundFunction,
+  generateTechRoundEvaluationFunction,
+  init_final_hr_round,
+  humanFinalHrRoundFeeback,
+  generatFinaleHrQuestions,
 } from "../functions/agent_func";
 import { StateAnnotation } from "./state_schema";
 
@@ -40,7 +43,10 @@ let builder = new StateGraph(StateAnnotation)
   .addNode("welcome_tech_round_two", init_tech_round_two)
   .addNode("generate_tech_round_two_questions", generateTechRoundTwoQuestions)
   .addNode("human_tech_round_two_feedback", humanTechRoundFeeback)
-  .addNode("evaluate_tech_round", generateTechRoundFunction)
+  .addNode("evaluate_tech_round", generateTechRoundEvaluationFunction)
+  .addNode("init_final_hr_round", init_final_hr_round)
+  .addNode("generate_final_hr_question", generatFinaleHrQuestions)
+  .addNode("human_final_hr_round_feedback", humanFinalHrRoundFeeback)
   .addNode("reject_interview_process", reject_interview_process)
   .addNode("complete", () => ({
     agent_message: ["Interview process complete!"],
@@ -82,7 +88,18 @@ let builder = new StateGraph(StateAnnotation)
       : "human_tech_round_two_feedback"
   )
   .addEdge("human_tech_round_two_feedback", "generate_tech_round_two_questions")
-  .addEdge("evaluate_tech_round", "complete")
+  .addConditionalEdges("evaluate_tech_round", (state) =>
+    state.tech_round_evaluation
+      ? "init_final_hr_round"
+      : "reject_interview_process"
+  )
+  .addEdge("init_final_hr_round", "generate_final_hr_question")
+  .addConditionalEdges("generate_final_hr_question", (state) =>
+    state.is_final_hr_questions_completed
+      ? "complete"
+      : "human_final_hr_round_feedback"
+  )
+  .addEdge("human_final_hr_round_feedback", "generate_final_hr_question")
   .addEdge("complete", END);
 
 export default builder;

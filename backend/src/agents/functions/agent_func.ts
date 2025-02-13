@@ -4,20 +4,25 @@ import { StateAnnotation } from "../workflow/state_schema";
 import path from "path";
 import { structuredGeminiModel } from "../../utils/gemini.service";
 import {
+  final_hr_interview_response_schema,
   hr_interview_evaluation_schema,
   hr_interview_response_schema,
   resume_response_schema,
+  tech_round_evaluation_schema,
   tech_round_one_interview_response_schema,
   tech_round_two_interview_response_schema,
 } from "../workflow/gemini_schema";
 import { fileToGenerativePart } from "../../utils/fileGenerative";
 import {
   evaluationTechRoundAnswerPrompt,
+  evaluationTechRoundUserAnswerPrompt,
   fetchResumeSummary,
+  generateFinalHrUserPrompt,
   generateTechRoundOneSystemPrompt,
   generateTechRoundOneUserPrompt,
   generateTechRoundTwoSystemPrompt,
   generateTechRoundTwoUserPrompt,
+  hr_final_generator_system_prompt,
   hr_genertor_system_prompt,
   hr_user_prompt,
   hrEvaluationPrompt,
@@ -201,6 +206,7 @@ export const generateTechRoundTwoQuestions = async (
   );
   const result = await geminiModel.generateContent(userPrompt);
   const response = JSON.parse(result.response.text());
+  console.log(response?.tech_round_two_data);
 
   return {
     agent_message: [response?.agent_message],
@@ -209,16 +215,73 @@ export const generateTechRoundTwoQuestions = async (
   };
 };
 
-export const generateTechRoundFunction = async (
+export const generateTechRoundEvaluationFunction = async (
   state: typeof StateAnnotation.State
 ) => {
   console.log("inside Tech Evaluator ROund");
 
-  const prompt = evaluationTechRoundAnswerPrompt(
+  const systemPrompt = evaluationTechRoundAnswerPrompt(
     state.tech_round_one_data,
     state.tech_round_two_data,
     state.interview_type
   );
 
-  return { agent_message: ["Doing good"] };
+  const userPrompt = evaluationTechRoundUserAnswerPrompt(
+    state.tech_round_one_data,
+    state.tech_round_two_data,
+    state.interview_type
+  );
+
+  const geminiModel = structuredGeminiModel(
+    tech_round_evaluation_schema,
+    systemPrompt
+  );
+  const result = await geminiModel.generateContent(userPrompt);
+  const response = JSON.parse(result.response.text());
+
+  return response;
+};
+
+export const init_final_hr_round = (state: typeof StateAnnotation.State) => {
+  return {
+    agent_message: [
+      `Congratulations! You've successfully cleared both technical evaluation rounds! Your skills and problem-solving abilities have truly impressed us. We're thrilled to move you forward to the final HR round. In this round, we'll discuss the approved salary of ${state.salary_approved} and finalize the remaining details. This is the last step before you officially join our team! Prepare any questions you may have regarding compensation, benefits, company culture, or anything else. We look forward to welcoming you aboard!`,
+    ],
+  };
+};
+
+export const generatFinaleHrQuestions = async (
+  state: typeof StateAnnotation.State
+) => {
+  console.log("Generating Final HR QUESTIONS");
+  const system_prompt = hr_final_generator_system_prompt(
+    state.final_hr_question_answers_completed,
+    state.salary_approved,
+    state.interview_type
+  );
+  const userPrompt = generateFinalHrUserPrompt(
+    state.agent_message.at(-1) ?? "",
+    state.user_message.at(-1) ?? ""
+  );
+  const geminiModel = structuredGeminiModel(
+    final_hr_interview_response_schema,
+    system_prompt
+  );
+  const result = await geminiModel.generateContent(userPrompt);
+  const response = JSON.parse(result.response.text());
+  console.log(response);
+
+  return {
+    agent_message: [response?.agent_message],
+    final_hr_question_answers_completed:
+      response?.final_hr_question_answers_completed,
+    is_final_hr_questions_completed: response?.is_final_hr_questions_completed,
+    final_salary_bargained: response?.final_salary_bargained,
+  };
+};
+
+export const humanFinalHrRoundFeeback = (
+  state: typeof StateAnnotation.State
+) => {
+  return {};
 };

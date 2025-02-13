@@ -71,6 +71,10 @@ export const startConversatioController: RequestHandler = async (
         "human_tech_round_one_feedback",
         "welcome_tech_round_two",
         "human_tech_round_two_feedback",
+        "init_final_hr_round",
+        "human_final_hr_round_feedback",
+        "welcome_tech_round_two",
+        "human_final_hr_round_feedback",
       ],
     });
     const thread = {
@@ -132,7 +136,7 @@ export const resumeConversatioController: RequestHandler = async (
         "welcome_tech_round_one",
         "human_tech_round_one_feedback",
         "welcome_tech_round_two",
-        "human_tech_round_two_feedback",
+        "human_final_hr_round_feedback",
       ],
       interruptAfter: ["evaluate_tech_round"],
     });
@@ -232,6 +236,24 @@ export const resumeConversatioController: RequestHandler = async (
           next_state: next_state,
         },
         "evaluate_tech_round"
+      );
+    } else if (next_state === "init_final_hr_round") {
+      await workflow.updateState(
+        thread,
+        {
+          next_state: next_state,
+          user_message: ["Hi"],
+        },
+        "init_final_hr_round"
+      );
+    } else if (next_state === "human_final_hr_round_feedback") {
+      await workflow.updateState(
+        thread,
+        {
+          next_state: next_state,
+          user_message: [userMessage],
+        },
+        "human_final_hr_round_feedback"
       );
     }
     let newAgentMessage = "";
