@@ -51,22 +51,18 @@ export const StateAnnotation = Annotation.Root({
   interview_type: Annotation<string>,
   is_hr_evaluation_pass: Annotation<boolean>,
   tech_round_one_data: Annotation<
-    [
-      {
-        tech_question: string;
-        user_answer: string;
-      }
-    ]
-  >,
+    { tech_question: string; user_answer: string }[]
+  >({
+    default: () => [],
+    reducer: (prev, next) => [...prev, ...next],
+  }),
   tech_round_one_complete: Annotation<Boolean>,
   tech_round_two_data: Annotation<
-    [
-      {
-        tech_question: string;
-        user_answer: string;
-      }
-    ]
-  >,
+    { tech_question: string; user_answer: string }[]
+  >({
+    default: () => [],
+    reducer: (prev, next) => [...prev, ...next],
+  }),
   tech_round_two_complete: Annotation<Boolean>,
   salary_approved: Annotation<number>,
   tech_round_evaluation: Annotation<Boolean>,

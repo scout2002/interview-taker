@@ -74,6 +74,8 @@ export const startConversatioController: RequestHandler = async (
         "init_final_hr_round",
         "human_final_hr_round_feedback",
         "welcome_tech_round_two",
+        "human_tech_round_two_feedback",
+        "init_final_hr_round",
         "human_final_hr_round_feedback",
       ],
     });
@@ -136,6 +138,8 @@ export const resumeConversatioController: RequestHandler = async (
         "welcome_tech_round_one",
         "human_tech_round_one_feedback",
         "welcome_tech_round_two",
+        "human_tech_round_two_feedback",
+        "init_final_hr_round",
         "human_final_hr_round_feedback",
       ],
       interruptAfter: ["evaluate_tech_round"],

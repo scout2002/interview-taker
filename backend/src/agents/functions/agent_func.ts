@@ -155,6 +155,8 @@ export const humanTechRoundFeeback = (state: typeof StateAnnotation.State) => {
 export const generateTechRoundOneQuestions = async (
   state: typeof StateAnnotation.State
 ) => {
+  console.log("GENERATING TECH ROUND ONE");
+
   const systemPrompt = generateTechRoundOneSystemPrompt(
     state.resume_summary,
     state.tech_round_one_data,
@@ -190,6 +192,8 @@ export const init_tech_round_two = (state: typeof StateAnnotation.State) => {
 export const generateTechRoundTwoQuestions = async (
   state: typeof StateAnnotation.State
 ) => {
+  console.log("GENERATING TECH ROUND TWO");
+
   const systemPrompt = generateTechRoundTwoSystemPrompt(
     state.resume_summary,
     state.tech_round_two_data,
@@ -206,7 +210,6 @@ export const generateTechRoundTwoQuestions = async (
   );
   const result = await geminiModel.generateContent(userPrompt);
   const response = JSON.parse(result.response.text());
-  console.log(response?.tech_round_two_data);
 
   return {
     agent_message: [response?.agent_message],
@@ -269,7 +272,6 @@ export const generatFinaleHrQuestions = async (
   );
   const result = await geminiModel.generateContent(userPrompt);
   const response = JSON.parse(result.response.text());
-  console.log(response);
 
   return {
     agent_message: [response?.agent_message],
